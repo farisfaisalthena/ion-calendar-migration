@@ -1,0 +1,7 @@
+{
+  "name": "calendar-migration-test",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}
