@@ -100,11 +100,6 @@ export class CalendarMonthComponent  implements ControlValueAccessor, AfterViewI
     this._onTouched = fn;
   }
 
-  findDayConfig(day: any, opt: CalendarModalOptions): any {
-    if (opt.daysConfig!.length <= 0) return null;
-    return opt.daysConfig!.find(n => day.isSame(n.date, 'day'));
-  }
-
   isBetween(day: CalendarDay): boolean {
     if (!day) return false;
 

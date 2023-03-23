@@ -1,7 +1,8 @@
 import { Component, EventEmitter, forwardRef, Input, OnInit, Output, Provider } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
-import * as moment from 'moment';
+// import * as moment from 'moment';
 import { CalendarDay, CalendarMonth, CalendarOriginal } from '../month-picker/month-picker.component';
+import { addDays, addMonths, addYears, format, getDaysInMonth, isAfter, isBefore, isEqual, isSameDay, isToday, isWithinInterval, subDays, subMonths, subYears } from 'date-fns'
 
 const isBoolean = (input: any) => input === true || input === false;
 
@@ -99,13 +100,10 @@ export const ION_CAL_VALUE_ACCESSOR: Provider = {
 @Component({
   selector: 'ion-calendar',
   providers: [ION_CAL_VALUE_ACCESSOR],
-  // host: {
-  //   '[class.component-mode]': 'componentMode'
-  // },
   templateUrl: './calendar.component.html',
   styleUrls: ['./calendar.component.scss'],
 })
-export class CalendarComponent  implements ControlValueAccessor, OnInit {
+export class CalendarComponent implements ControlValueAccessor, OnInit {
 
   @Output()
   select: EventEmitter<CalendarDay> = new EventEmitter();
@@ -167,7 +165,7 @@ export class CalendarComponent  implements ControlValueAccessor, OnInit {
     this._onChanged = fn;
   }
 
-  _onTouched: Function = () => {};
+  _onTouched: Function = () => { };
 
   registerOnTouched(fn: () => {}): void {
     this._onTouched = fn;
@@ -210,11 +208,14 @@ export class CalendarComponent  implements ControlValueAccessor, OnInit {
   _payloadToTimeNumber(value: CalendarComponentPayloadTypes): number {
     let date;
     if (this.type === 'string') {
-      date = moment(value, this.format);
+      date = format(new Date(value as number), 'yyyy-MM-dd');
+      // date = moment(value, this.format);
     } else {
-      date = moment(value);
+      date = new Date(value as number).getTime();
+      // date = moment(value);
     }
-    return date.valueOf();
+    // return date.valueOf();
+    return date as number;
   }
 
   _createCalendarDay(value: CalendarComponentPayloadTypes): CalendarDay {
@@ -225,12 +226,20 @@ export class CalendarComponent  implements ControlValueAccessor, OnInit {
     return this._options;
   }
 
+  /** New Function */
+  monthIndexToDate(monthIndex: number): Date {
+    const year = this.monthOpt.original.year; // get current year
+    const month = monthIndex; // adjust for 0-based index
+    const date = new Date(year, month, 1); // create date object for first day of month
+
+    return date;
+  }
+
 
   monthOnSelect(month: number): void {
+    const newMonth = this.monthIndexToDate(month).getTime();
     this._view = 'days';
-    const newMonth = moment(this.monthOpt.original.time)
-      .month(month)
-      .valueOf();
+
     this.monthChange.emit({
       oldMonth: this.multiFormat(this.monthOpt.original.time),
       newMonth: this.multiFormat(newMonth),
@@ -241,8 +250,6 @@ export class CalendarComponent  implements ControlValueAccessor, OnInit {
   ngOnInit(): void {
     this.initOpt();
     this.monthOpt = this.createMonth(new Date().getTime());
-
-    console.log('HHHH: ', this.monthOpt)
   }
 
   private initOpt(): void {
@@ -294,7 +301,7 @@ export class CalendarComponent  implements ControlValueAccessor, OnInit {
       weekdays = ['S', 'M', 'T', 'W', 'T', 'F', 'S'],
       daysConfig = _daysConfig,
       disableWeeks = _disableWeeks,
-      showAdjacentMonthDay = true,
+      showAdjacentMonthDay = false, // TODO: Change to true
       defaultEndDateToStartDate = false,
       clearLabel = null,
     } = { ...this.defaultOpts, ...calendarOptions };
@@ -338,7 +345,7 @@ export class CalendarComponent  implements ControlValueAccessor, OnInit {
   }
 
   _monthFormat(date: number): string {
-    return moment(date).format(this._d.monthFormat!.replace(/y/g, 'Y'));
+    return format(date, 'MMM yyyy');
   }
 
   getDate(date: number) {
@@ -350,13 +357,15 @@ export class CalendarComponent  implements ControlValueAccessor, OnInit {
   }
 
   canBack(): boolean {
-    if (!this._d.from || this._view !== 'days') { return true; }
-    return this.monthOpt.original.time > moment(this._d.from).valueOf();
+    if (!this._d.from || this._view !== 'days') return true;
+
+    return this.monthOpt.original.time > new Date(this._d.from).getTime();
   }
 
   canNext(): boolean {
-    if (!this._d.to || this._view !== 'days') { return true; }
-    return this.monthOpt.original.time < moment(this._d.to).valueOf();
+    if (!this._d.to || this._view !== 'days') return true;
+
+    return this.monthOpt.original.time < new Date(this._d.to).getTime();
   }
 
   prev(): void {
@@ -376,16 +385,14 @@ export class CalendarComponent  implements ControlValueAccessor, OnInit {
   }
 
   nextYear(): void {
-    const nextTime = moment(this.monthOpt.original.time)
-      .add(1, 'year')
-      .valueOf();
-    this.monthOpt = this.createMonth(nextTime);
+    const nextYear = addYears(new Date(this.monthOpt.original.time), 1).getTime();
+
+    this.monthOpt = this.createMonth(nextYear);
   }
 
   nextMonth(): void {
-    const nextTime = moment(this.monthOpt.original.time)
-      .add(1, 'months')
-      .valueOf();
+    const nextTime = addMonths(new Date(this.monthOpt.original.time), 1).getTime();
+
     this.monthChange.emit({
       oldMonth: this.multiFormat(this.monthOpt.original.time),
       newMonth: this.multiFormat(nextTime),
@@ -394,17 +401,18 @@ export class CalendarComponent  implements ControlValueAccessor, OnInit {
   }
 
   prevYear(): void {
-    if (moment(this.monthOpt.original.time).year() === 1970) { return; }
-    const backTime = moment(this.monthOpt.original.time)
-      .subtract(1, 'year')
-      .valueOf();
+    const originalTime = new Date(this.monthOpt.original.time);
+
+    if (originalTime.getFullYear() === 1970) return;
+
+    const backTime = subYears(new Date(this.monthOpt.original.time), 1).getTime();
+
     this.monthOpt = this.createMonth(backTime);
   }
 
   backMonth(): void {
-    const backTime = moment(this.monthOpt.original.time)
-      .subtract(1, 'months')
-      .valueOf();
+    const backTime = subMonths(new Date(this.monthOpt.original.time), 1).getTime();
+
     this.monthChange.emit({
       oldMonth: this.multiFormat(this.monthOpt.original.time),
       newMonth: this.multiFormat(backTime),
@@ -432,10 +440,9 @@ export class CalendarComponent  implements ControlValueAccessor, OnInit {
     let _startMonth = new Date(_start.getFullYear(), _start.getMonth(), 1).getTime();
 
     for (let i = 0; i < monthsNum; i++) {
-      let time = moment(_startMonth)
-        .add(i, 'M')
-        .valueOf();
+      let time = addMonths(new Date(_startMonth), i).getTime();
       let originalCalendar = this.createOriginalCalendar(time);
+
       _array.push(this.createCalendarMonth(originalCalendar, opt));
     }
 
@@ -462,22 +469,21 @@ export class CalendarComponent  implements ControlValueAccessor, OnInit {
 
     if (opt.showAdjacentMonthDay) {
       const _booleanMap = days.map(e => !!e);
-      const thisMonth = moment(original.time).month();
+      const thisMonth = new Date(original.time).getMonth();
+
       let startOffsetIndex = _booleanMap.indexOf(true) - 1;
       let endOffsetIndex = _booleanMap.lastIndexOf(true) + 1;
       for (startOffsetIndex; startOffsetIndex >= 0; startOffsetIndex--) {
-        const dayBefore = moment(days[startOffsetIndex + 1].time)
-          .clone()
-          .subtract(1, 'd');
-        days[startOffsetIndex] = this.createCalendarDay(dayBefore.valueOf(), opt, thisMonth);
+        const dayBefore = subDays(new Date(days[startOffsetIndex + 1].time), 1).getTime();
+
+        days[startOffsetIndex] = this.createCalendarDay(dayBefore, opt, thisMonth);
       }
 
       if (!(_booleanMap.length % 7 === 0 && _booleanMap[_booleanMap.length - 1])) {
         for (endOffsetIndex; endOffsetIndex < days.length + (endOffsetIndex % 7); endOffsetIndex++) {
-          const dayAfter = moment(days[endOffsetIndex - 1].time)
-            .clone()
-            .add(1, 'd');
-          days[endOffsetIndex] = this.createCalendarDay(dayAfter.valueOf(), opt, thisMonth);
+          const dayAfter = addDays(new Date(days[endOffsetIndex - 1].time), 1).getTime();
+
+          days[endOffsetIndex] = this.createCalendarDay(dayAfter, opt, thisMonth);
         }
       }
     }
@@ -489,24 +495,38 @@ export class CalendarComponent  implements ControlValueAccessor, OnInit {
   }
 
   createCalendarDay(time: number, opt: CalendarModalOptions, month?: number): CalendarDay {
-    let _time = moment(time);
-    let date = moment(time);
-    let isToday = moment().isSame(_time, 'days');
-    let dayConfig = this.findDayConfig(_time, opt);
-    let _rangeBeg = moment(opt.from).valueOf();
-    let _rangeEnd = moment(opt.to).valueOf();
+    const date = new Date(time);
+
+    let _isToday = isToday(new Date(time));
+    let dayConfig = this.findDayConfig(date, opt);
+    let _rangeBeg = new Date(opt.from as Date).getTime();
+    let _rangeEnd = new Date(opt.to as Date).getTime();
     let isBetween = true;
-    let disableWee = opt.disableWeeks!.indexOf(_time.toDate().getDay()) !== -1;
+    let disableWee = opt.disableWeeks!.indexOf(date.getDay()) !== -1;
+
+    const isBetweenTime = (date: Date, from: number, to: number, inclusivity = '()'): boolean => {
+      if (!['()', '[]', '(]', '[)'].includes(inclusivity)) {
+        throw new Error('Inclusivity parameter must be one of (), [], (], [)');
+      }
+
+      const isBeforeEqual = inclusivity[0] === '[',
+        isAfterEqual = inclusivity[1] === ']';
+
+      return (isBeforeEqual ? (isEqual(from, date) || isBefore(from, date)) : isBefore(from, date)) &&
+        (isAfterEqual ? (isEqual(to, date) || isAfter(to, date)) : isAfter(to, date));
+    };
+
     if (_rangeBeg > 0 && _rangeEnd > 0) {
       if (!opt.canBackwardsSelected) {
-        isBetween = !_time.isBetween(_rangeBeg, _rangeEnd, 'days', '[]');
+        isBetween = !isBetweenTime(date, _rangeBeg, _rangeEnd, '[]');
       } else {
-        isBetween = moment(_time).isBefore(_rangeBeg) ? false : isBetween;
+        isBetween = isBefore(new Date(time), _rangeBeg) ? false : isBetween;
       }
     } else if (_rangeBeg > 0 && _rangeEnd === 0) {
       if (!opt.canBackwardsSelected) {
-        let _addTime = _time.add(1, 'day');
-        isBetween = !_addTime.isAfter(_rangeBeg);
+        let _addTime = addDays(new Date(time), 1);
+
+        isBetween = !isAfter(_addTime, _rangeBeg);
       } else {
         isBetween = false;
       }
@@ -535,23 +555,24 @@ export class CalendarComponent  implements ControlValueAccessor, OnInit {
 
     return {
       time,
-      isToday,
+      isToday: _isToday,
       title,
       subTitle,
       selected: false,
-      isLastMonth: date.month() < month!,
-      isNextMonth: date.month() > month!,
+      isLastMonth: date.getMonth() < month!,
+      isNextMonth: date.getMonth() > month!,
       marked: dayConfig ? dayConfig.marked || false : false,
       cssClass: dayConfig ? dayConfig.cssClass || '' : '',
       disable: _disable,
-      isFirst: date.date() === 1,
-      isLast: date.date() === date.daysInMonth(),
+      isFirst: date.getDate() === 1,
+      isLast: date.getDate() === getDaysInMonth(new Date(time)),
     };
   }
 
-  findDayConfig(day: any, opt: CalendarModalOptions): any {
+  findDayConfig(day: Date, opt: CalendarModalOptions): any {
     if (opt.daysConfig!.length <= 0) return null;
-    return opt.daysConfig!.find(n => day.isSame(n.date, 'day'));
+
+    return opt.daysConfig!.find(n => isSameDay(day, new Date(n.date)));
   }
 
   createOriginalCalendar(time: number): CalendarOriginal {
@@ -559,7 +580,7 @@ export class CalendarComponent  implements ControlValueAccessor, OnInit {
     const year = date.getFullYear();
     const month = date.getMonth();
     const firstWeek = new Date(year, month, 1).getDay();
-    const howManyDays = moment(time).daysInMonth();
+    const howManyDays = getDaysInMonth(new Date(time));
     return {
       year,
       month,
@@ -571,36 +592,45 @@ export class CalendarComponent  implements ControlValueAccessor, OnInit {
   }
 
   multiFormat(time: number): CalendarResult {
-    const _moment = moment(time);
+    const date = new Date(time);
+
     return {
-      time: _moment.valueOf(),
-      unix: _moment.unix(),
-      dateObj: _moment.toDate(),
-      string: _moment.format('YYYY-MM-DD'),
-      years: _moment.year(),
-      months: _moment.month() + 1,
-      date: _moment.date(),
+      time: date.getTime(),
+      unix: date.getTime() / 1000,
+      dateObj: new Date(time),
+      string: format(date, 'yyyy-MM-dd'),
+      years: date.getFullYear(),
+      months: date.getMonth() + 1,
+      date: date.getDate()
     };
   }
 
   _handleType(value: number): CalendarComponentPayloadTypes {
-    const date = moment(value);
+    const date = new Date(value);
+
     switch (this.type) {
       case 'string':
-        return date.format(this.format);
+        return format(date, 'yyyy-MM-dd');
       case 'js-date':
-        return date.toDate();
-      case 'moment':
         return date;
+      case 'moment':
+        return {};
       case 'time':
-        return date.valueOf();
+        return date.getTime();
       case 'object':
-        return date.toObject();
+        return {
+          date: date.getDate(),
+          hours: date.getHours(),
+          milliseconds: date.getMilliseconds(),
+          minutes: date.getMinutes(),
+          months: date.getMonth(),
+          seconds: date.getSeconds(),
+          years: date.getFullYear()
+        };
     }
-    return date;
   }
 
-  _onChanged: Function = () => {};
+  _onChanged: Function = () => { };
 
   onChanged($event: CalendarDay[]): void {
     switch (this._d.pickMode) {
