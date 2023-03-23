@@ -227,7 +227,7 @@ export class CalendarComponent  implements ControlValueAccessor, OnInit {
 
 
   monthOnSelect(month: number): void {
-    // this._view = 'days';
+    this._view = 'days';
     const newMonth = moment(this.monthOpt.original.time)
       .month(month)
       .valueOf();
