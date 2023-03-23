@@ -1,4 +1,6 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { parseISO } from 'date-fns';
+import { CalendarComponentOptions, DayConfig } from '../components/calendar/calendar.component';
 
 @Component({
   selector: 'app-home',
@@ -6,6 +8,13 @@ import { Component, EventEmitter, OnInit, Output } from '@angular/core';
   styleUrls: ['home.page.scss'],
 })
 export class HomePage {
+
+  datesConfig: DayConfig[] = [];
+  options: CalendarComponentOptions = {
+    daysConfig: this.datesConfig,
+    weekStart: 1,
+    pickMode: 'single'
+  };
 
   attendanceResponse = [
     {
@@ -76,6 +85,14 @@ export class HomePage {
         color = 'var(--ion-color-danger)';
       }
 
+      this.datesConfig.push({
+        date: this.formatDate(att.CLASS_DATE),
+        marked: true,
+        disable: false,
+        subTitle: '',
+        cssClass: ''
+      });
+
       // const response: HighlitedDate = {
       //   date: att.CLASS_DATE.replace('T00:00:00+08:00Z', ''),
       //   textColor: '#ffffff',
@@ -84,5 +101,9 @@ export class HomePage {
 
       // this.highlightedDates.push(response);
     }
+  }
+
+  formatDate(date: string) {
+    return new Date(new Date(parseISO(date)).getTime() + (new Date().getTimezoneOffset() * 60 * 1000));
   }
 }

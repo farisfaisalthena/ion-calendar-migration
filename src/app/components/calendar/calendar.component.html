@@ -26,7 +26,7 @@
 
   <ion-calendar-month [componentMode]="true" [(ngModel)]="_calendarMonthValue" [month]="monthOpt"
   [readonly]="readonly" (change)="onChanged($event)" (swipe)="swipeEvent($event)" (select)="select.emit($event)"
-  (selectStart)="selectStart.emit($event)" (selectEnd)="selectEnd.emit($event)"></ion-calendar-month>
+  (selectStart)="selectStart.emit($event)" (selectEnd)="selectEnd.emit($event)" [pickMode]="_d.pickMode"></ion-calendar-month>
 
   <!-- <ion-calendar-month [componentMode]="true" [(ngModel)]="_calendarMonthValue" [month]="monthOpt"
     [readonly]="readonly" (change)="onChanged($event)" (swipe)="swipeEvent($event)" (select)="select.emit($event)"

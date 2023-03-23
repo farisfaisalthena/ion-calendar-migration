@@ -64,7 +64,7 @@ export interface DayConfig {
 export interface CalendarOptions {
   from?: Date | number;
   to?: Date | number;
-  pickMode?: string;
+  pickMode: "multi" | "single" | "range";
   weekStart?: number;
   disableWeeks?: Array<number>;
   weekdays?: Array<string>;
@@ -119,6 +119,9 @@ export class CalendarComponent implements ControlValueAccessor, OnInit {
     return 12;
   }
   _view: 'month' | 'days' = 'days';
+
+
+  @Input() data: DayConfig[] = [];
 
   @Input()
   format: string = 'YYYY-MM-DD';
@@ -301,10 +304,11 @@ export class CalendarComponent implements ControlValueAccessor, OnInit {
       weekdays = ['S', 'M', 'T', 'W', 'T', 'F', 'S'],
       daysConfig = _daysConfig,
       disableWeeks = _disableWeeks,
-      showAdjacentMonthDay = false, // TODO: Change to true
+      showAdjacentMonthDay = true,
       defaultEndDateToStartDate = false,
       clearLabel = null,
     } = { ...this.defaultOpts, ...calendarOptions };
+
 
     return {
       id,
