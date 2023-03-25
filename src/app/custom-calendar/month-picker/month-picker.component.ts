@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 
 import { defaultMonths } from '../default-calendar-settings';
-import { ICalendarMonth } from '../interfaces';
+import { ICalendarMonth } from '../calendar-interface';
 
 @Component({
   selector: 'month-picker',

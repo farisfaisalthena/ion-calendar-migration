@@ -1,7 +1,9 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component } from '@angular/core';
+
 import { parseISO } from 'date-fns';
+
 import { CalendarComponentOptions, DayConfig } from '../components/calendar/calendar.component';
-import { ICalendarOptionsV2 } from '../custom-calendar/interfaces';
+import { ICalendarOptions } from '../custom-calendar/calendar-interface';
 
 @Component({
   selector: 'app-home',
@@ -18,7 +20,7 @@ export class HomePage {
     pickMode: 'single'
   };
 
-  opt: ICalendarOptionsV2 = {
+  opt: ICalendarOptions = {
     daysConfig: [],
     pickerMode: 'range'
   }

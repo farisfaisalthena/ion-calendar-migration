@@ -4,8 +4,8 @@ import { ControlValueAccessor } from '@angular/forms';
 import { addDays, addMonths, format, getDaysInMonth, isSameDay, isToday, subDays } from 'date-fns';
 
 import { CalendarComponentPayloadTypes, CalendarComponentTypeProperty } from 'src/app/components/calendar/calendar.component';
+import { ICalendarDay, ICalendarMonth, ICalendarMonthChangeEv, ICalendarOptions, ICalendarOriginal, IDayConfig } from '../calendar-interface';
 import { defaultMonthFormat } from '../default-calendar-settings';
-import { ICalendarDay, ICalendarMonth, ICalendarMonthChangeEv, ICalendarOptionsV2, ICalendarOriginal, IDayConfig } from '../interfaces';
 
 @Component({
   selector: 'custom-calendar',
@@ -16,7 +16,7 @@ export class CalendarComponent implements ControlValueAccessor, OnInit {
 
   currentTimestamp: number = new Date().getTime();
   monthOpt!: ICalendarMonth;
-  calendarOpts!: ICalendarOptionsV2;
+  calendarOpts!: ICalendarOptions;
   viewMode: 'days' | 'month' = 'days';
   calendarMonthValue: Array<ICalendarDay | null> = [null, null];
 
@@ -35,7 +35,7 @@ export class CalendarComponent implements ControlValueAccessor, OnInit {
 
   // Option required
   @Input()
-  set options(value: ICalendarOptionsV2) {
+  set options(value: ICalendarOptions) {
     this.calendarOpts = value;
     this.initOpts();
     if (this.monthOpt?.original) {
@@ -160,7 +160,7 @@ export class CalendarComponent implements ControlValueAccessor, OnInit {
     return this.createMonthsByPeriod(date, 1, this.calendarOpts)[0];
   }
 
-  createMonthsByPeriod(startTime: number, monthsNum: number, opt: ICalendarOptionsV2): Array<ICalendarMonth> {
+  createMonthsByPeriod(startTime: number, monthsNum: number, opt: ICalendarOptions): Array<ICalendarMonth> {
     let _array: Array<ICalendarMonth> = [];
 
     let _start = new Date(startTime);
@@ -176,7 +176,7 @@ export class CalendarComponent implements ControlValueAccessor, OnInit {
     return _array;
   }
 
-  createCalendarMonth(original: ICalendarOriginal, opt: ICalendarOptionsV2): ICalendarMonth {
+  createCalendarMonth(original: ICalendarOriginal, opt: ICalendarOptions): ICalendarMonth {
     let days: Array<ICalendarDay> = new Array(6).fill(null);
 
     for (let i = original.firstWeek; i < original.daysInMonth + original.firstWeek; i++) {
@@ -244,7 +244,7 @@ export class CalendarComponent implements ControlValueAccessor, OnInit {
     return response;
   }
 
-  createCalendarDay(timestamp: number, opt: ICalendarOptionsV2, month?: number): ICalendarDay {
+  createCalendarDay(timestamp: number, opt: ICalendarOptions, month?: number): ICalendarDay {
     const date = new Date(timestamp);
     const dayConfig = this.findDayConfig(date, opt);
     const marked = dayConfig ? dayConfig.marked || false : false
@@ -333,7 +333,7 @@ export class CalendarComponent implements ControlValueAccessor, OnInit {
     // };
   }
 
-  findDayConfig(day: Date, opt: ICalendarOptionsV2): IDayConfig | null | undefined {
+  findDayConfig(day: Date, opt: ICalendarOptions): IDayConfig | null | undefined {
     if (opt.daysConfig && opt.daysConfig.length < 1) return null;
 
     return opt.daysConfig.find(n => isSameDay(day, new Date(n.date)));
@@ -360,7 +360,7 @@ export class CalendarComponent implements ControlValueAccessor, OnInit {
   }
 
   /** Initialise default options */
-  defaultOpt(calendarOptions: any = {}): ICalendarOptionsV2 {
+  defaultOpt(calendarOptions: any = {}): ICalendarOptions {
     const _disableWeeks: number[] = [];
     const _daysConfig: IDayConfig[] = [];
     let {
@@ -376,7 +376,7 @@ export class CalendarComponent implements ControlValueAccessor, OnInit {
       showMonthPicker = true
     } = { ...calendarOptions };
 
-    const defaultOpt: ICalendarOptionsV2 = {
+    const defaultOpt: ICalendarOptions = {
       from,
       to,
       pickerMode,
