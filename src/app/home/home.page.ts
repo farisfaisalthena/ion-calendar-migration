@@ -1,6 +1,7 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { parseISO } from 'date-fns';
 import { CalendarComponentOptions, DayConfig } from '../components/calendar/calendar.component';
+import { ICalendarOptionsV2 } from '../custom-calendar/interfaces';
 
 @Component({
   selector: 'app-home',
@@ -12,9 +13,15 @@ export class HomePage {
   datesConfig: DayConfig[] = [];
   options: CalendarComponentOptions = {
     daysConfig: this.datesConfig,
+    showAdjacentMonthDay: false,
     weekStart: 1,
     pickMode: 'single'
   };
+
+  opt: ICalendarOptionsV2 = {
+    daysConfig: [],
+    pickerMode: 'range'
+  }
 
   attendanceResponse = [
     {
@@ -75,8 +82,6 @@ export class HomePage {
     }
   ];
 
-  highlightedDates: any[] = [];
-
   constructor() {
     for (const att of this.attendanceResponse) {
       let color = 'var(--ion-color-success)';
@@ -92,14 +97,6 @@ export class HomePage {
         subTitle: '',
         cssClass: ''
       });
-
-      // const response: HighlitedDate = {
-      //   date: att.CLASS_DATE.replace('T00:00:00+08:00Z', ''),
-      //   textColor: '#ffffff',
-      //   backgroundColor: color
-      // }
-
-      // this.highlightedDates.push(response);
     }
   }
 

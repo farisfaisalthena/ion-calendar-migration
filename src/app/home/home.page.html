@@ -13,12 +13,16 @@
         ion2-calendar
       </h2>
       <ion-card class="ion-no-margin">
-        <ion-calendar [data]="datesConfig"></ion-calendar>
+        <ion-calendar [options]="options"></ion-calendar>
       </ion-card>
 
       <h2>
         Revamp Calendar
       </h2>
+
+      <ion-card class="ion-no-margin">
+        <custom-calendar></custom-calendar>
+      </ion-card>
     </ion-col>
   </ion-row>
 </ion-content>

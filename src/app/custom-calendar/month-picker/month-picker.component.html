@@ -1,0 +1,8 @@
+<div class="month-picker">
+  <div class="month-picker-item" *ngFor="let m of dateMonths; let i = index">
+    <button type="button" [ngClass]="{ 'selected-month': selectedMonth(i) }" (click)="onSelectEvent(i)"
+      [attr.aria-label]="getMonth(i)">
+      {{ m }}
+    </button>
+  </div>
+</div>
