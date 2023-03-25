@@ -2,7 +2,7 @@ import { AfterViewInit, Component, EventEmitter, forwardRef, Input, Output, Trac
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
 import { ICalendarDay, ICalendarMonth, ICalendarOriginal } from '../calendar-interface';
-import { Color, PickerMode } from 'src/app/calendar-types';
+import { Color, PickerMode } from 'src/app/custom-calendar/calendar-types';
 
 export const MONTH_VALUE_ACCESSOR: any = {
   provide: NG_VALUE_ACCESSOR,
