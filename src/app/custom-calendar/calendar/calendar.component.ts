@@ -1,13 +1,11 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { ControlValueAccessor } from '@angular/forms';
 
-import { addDays, addMonths, format, getDaysInMonth, isBefore, isSameDay, isToday, subDays } from 'date-fns';
+import { addDays, addMonths, format, getDaysInMonth, isSameDay, isToday, subDays } from 'date-fns';
 
 import { CalendarComponentPayloadTypes, CalendarComponentTypeProperty } from 'src/app/components/calendar/calendar.component';
-import { CalendarOriginal, CalendarDay } from 'src/app/components/month-picker/month-picker.component';
 import { defaultMonthFormat } from '../default-calendar-settings';
-import { ICalendarMonth, ICalendarMonthChangeEv, ICalendarOptionsV2 } from '../interfaces';
-import { IDayConfig } from '../interfaces/calendar-option';
+import { ICalendarDay, ICalendarMonth, ICalendarMonthChangeEv, ICalendarOptionsV2, ICalendarOriginal, IDayConfig } from '../interfaces';
 
 @Component({
   selector: 'custom-calendar',
@@ -19,6 +17,8 @@ export class CalendarComponent implements ControlValueAccessor, OnInit {
   currentTimestamp: number = new Date().getTime();
   monthOpt!: ICalendarMonth;
   calendarOpts!: ICalendarOptionsV2;
+  viewMode: 'days' | 'month' = 'days';
+  calendarMonthValue: Array<ICalendarDay | null> = [null, null];
 
 
 
@@ -28,17 +28,18 @@ export class CalendarComponent implements ControlValueAccessor, OnInit {
 
 
 
-  _calendarMonthValue: Array<CalendarDay | null> = [null, null];
   type: CalendarComponentTypeProperty = 'string';
   _showToggleButtons = true;
-  _view: 'month' | 'days' = 'days';
+  // _view: 'month' | 'days' = 'days';
+
+
   // Option required
   @Input()
   set options(value: ICalendarOptionsV2) {
     this.calendarOpts = value;
     this.initOpts();
     if (this.monthOpt?.original) {
-      this.monthOpt = this.createMonth(this.monthOpt.original.time);
+      this.monthOpt = this.createMonth(this.monthOpt.original.timestamp);
     }
   }
   // Output events
@@ -74,8 +75,9 @@ export class CalendarComponent implements ControlValueAccessor, OnInit {
     }
     if (this.calendarOpts && typeof this.calendarOpts.showMonthPicker === 'boolean') {
       this.showMonthPicker = this.calendarOpts.showMonthPicker;
-      if (this._view !== 'days' && !this.showMonthPicker) {
-        this._view = 'days';
+
+      if (this.viewMode !== 'days' && !this.showMonthPicker) {
+        this.viewMode = 'days';
       }
     }
 
@@ -87,8 +89,8 @@ export class CalendarComponent implements ControlValueAccessor, OnInit {
 
     if (!obj) return;
 
-    if (this._calendarMonthValue[0]) {
-      this.monthOpt = this.createMonth(this._calendarMonthValue[0].time);
+    if (this.calendarMonthValue[0]) {
+      this.monthOpt = this.createMonth(this.calendarMonthValue[0].timestamp);
       return;
     }
 
@@ -105,31 +107,31 @@ export class CalendarComponent implements ControlValueAccessor, OnInit {
 
   _writeValue(value: any): void {
     if (!value) {
-      this._calendarMonthValue = [null, null];
+      this.calendarMonthValue = [null, null];
       return;
     }
 
     switch (this.calendarOpts.pickerMode) {
       case 'single':
-        this._calendarMonthValue[0] = this._createCalendarDay(value);
+        this.calendarMonthValue[0] = this._createCalendarDay(value);
         break;
 
       case 'range':
         if (value.from) {
-          this._calendarMonthValue[0] = value.from ? this._createCalendarDay(value.from) : null;
+          this.calendarMonthValue[0] = value.from ? this._createCalendarDay(value.from) : null;
         }
         if (value.to) {
-          this._calendarMonthValue[1] = value.to ? this._createCalendarDay(value.to) : null;
+          this.calendarMonthValue[1] = value.to ? this._createCalendarDay(value.to) : null;
         }
         break;
 
       case 'multi':
         if (Array.isArray(value)) {
-          this._calendarMonthValue = value.map(e => {
+          this.calendarMonthValue = value.map(e => {
             return this._createCalendarDay(e);
           });
         } else {
-          this._calendarMonthValue = [null, null];
+          this.calendarMonthValue = [null, null];
         }
         break;
 
@@ -137,7 +139,7 @@ export class CalendarComponent implements ControlValueAccessor, OnInit {
     }
   }
 
-  _createCalendarDay(value: CalendarComponentPayloadTypes): CalendarDay {
+  _createCalendarDay(value: CalendarComponentPayloadTypes): ICalendarDay {
     return this.createCalendarDay(this._payloadToTimeNumber(value), this.calendarOpts);
   }
 
@@ -174,11 +176,12 @@ export class CalendarComponent implements ControlValueAccessor, OnInit {
     return _array;
   }
 
-  createCalendarMonth(original: CalendarOriginal, opt: ICalendarOptionsV2): ICalendarMonth {
-    let days: Array<CalendarDay> = new Array(6).fill(null);
-    let len = original.howManyDays;
-    for (let i = original.firstWeek; i < len + original.firstWeek; i++) {
-      let itemTime = new Date(original.year, original.month, i - original.firstWeek + 1).getTime();
+  createCalendarMonth(original: ICalendarOriginal, opt: ICalendarOptionsV2): ICalendarMonth {
+    let days: Array<ICalendarDay> = new Array(6).fill(null);
+
+    for (let i = original.firstWeek; i < original.daysInMonth + original.firstWeek; i++) {
+      const itemTime = new Date(original.year, original.month, i - original.firstWeek + 1).getTime();
+
       days[i] = this.createCalendarDay(itemTime, opt);
     }
 
@@ -193,91 +196,120 @@ export class CalendarComponent implements ControlValueAccessor, OnInit {
     }
 
     if (opt.overlapMonths) {
-      const _booleanMap = days.map(e => !!e);
-      const thisMonth = new Date(original.time).getMonth();
+      const booleanArr = days.map(e => !!e);
+      const thisMonth = new Date(original.timestamp).getMonth();
 
-      let startOffsetIndex = _booleanMap.indexOf(true) - 1;
-      let endOffsetIndex = _booleanMap.lastIndexOf(true) + 1;
+      let startOffsetIndex = booleanArr.indexOf(true) - 1;
+      let endOffsetIndex = booleanArr.lastIndexOf(true) + 1;
       for (startOffsetIndex; startOffsetIndex >= 0; startOffsetIndex--) {
-        const dayBefore = subDays(new Date(days[startOffsetIndex + 1].time), 1).getTime();
+        const dayBefore = subDays(new Date(days[startOffsetIndex + 1].timestamp), 1).getTime();
 
         days[startOffsetIndex] = this.createCalendarDay(dayBefore, opt, thisMonth);
       }
 
-      if (!(_booleanMap.length % 7 === 0 && _booleanMap[_booleanMap.length - 1])) {
+      if (!(booleanArr.length % 7 === 0 && booleanArr[booleanArr.length - 1])) {
         for (endOffsetIndex; endOffsetIndex < days.length + (endOffsetIndex % 7); endOffsetIndex++) {
-          const dayAfter = addDays(new Date(days[endOffsetIndex - 1].time), 1).getTime();
+          const dayAfter = addDays(new Date(days[endOffsetIndex - 1].timestamp), 1).getTime();
 
           days[endOffsetIndex] = this.createCalendarDay(dayAfter, opt, thisMonth);
         }
       }
     }
 
-    return {
+    const response: ICalendarMonth = {
       days,
-      original: original,
-    };
+      original
+    }
+
+    return response;
   }
 
-  createOriginalCalendar(time: number): CalendarOriginal {
+  createOriginalCalendar(time: number): ICalendarOriginal {
     const date = new Date(time);
     const year = date.getFullYear();
     const month = date.getMonth();
+
+    const timestamp = new Date(year, month, 1).getTime();
     const firstWeek = new Date(year, month, 1).getDay();
-    const howManyDays = getDaysInMonth(new Date(time));
-    return {
+    const daysInMonth = getDaysInMonth(new Date(time));
+
+    const response: ICalendarOriginal = {
+      timestamp,
+      date,
       year,
       month,
       firstWeek,
-      howManyDays,
-      time: new Date(year, month, 1).getTime(),
-      date: new Date(time),
-    };
+      daysInMonth
+    }
+    return response;
   }
 
-  createCalendarDay(time: number, opt: ICalendarOptionsV2, month?: number): CalendarDay {
-    const date = new Date(time);
+  createCalendarDay(timestamp: number, opt: ICalendarOptionsV2, month?: number): ICalendarDay {
+    const date = new Date(timestamp);
+    const dayConfig = this.findDayConfig(date, opt);
+    const marked = dayConfig ? dayConfig.marked || false : false
+    const cssClass = dayConfig ? dayConfig.cssClass || '' : '';
 
-    let _isToday = isToday(new Date(time));
-    let dayConfig = this.findDayConfig(date, opt);
-
-    let _rangeBeg = new Date(opt.from as Date).getTime();
-    let _rangeEnd = new Date(opt.to as Date).getTime();
-    let isBetween = true;
-    let disableWee = opt.disableWeeks!.indexOf(date.getDay()) !== -1;
-
-    if (_rangeBeg > 0 && _rangeEnd > 0) {
-      isBetween = isBefore(new Date(time), _rangeBeg) ? false : isBetween;
-      // if (!opt.canBackwardsSelected) {
-      //   isBetween = !this.isBetweenTime(date, _rangeBeg, _rangeEnd, '[]');
-      // } else {
-      // }
-    } else if (_rangeBeg > 0 && _rangeEnd === 0) {
-      isBetween = false;
-      // if (!opt.canBackwardsSelected) {
-      //   let _addTime = addDays(new Date(time), 1);
-
-      //   isBetween = !isAfter(_addTime, _rangeBeg);
-      // } else {
-      // }
-    }
-
-    let _disable = false;
-
-    if (dayConfig && !!dayConfig.disable) {
-      _disable = dayConfig.disable;
-    } else {
-      _disable = disableWee || isBetween;
-    }
-
-    let title = new Date(time).getDate().toString();
+    let title = new Date(timestamp).getDate().toString();
     if (dayConfig && dayConfig.title) {
       title = dayConfig.title;
     }
+    let disabled = false;
+    let isBetween = true;
+    let disableWeek = opt.disableWeeks!.indexOf(date.getDay()) !== -1;
+    if (dayConfig && !!dayConfig.disable) {
+      disabled = dayConfig.disable;
+    } else {
+      disabled = disableWeek || isBetween;
+    }
+
+    const response: ICalendarDay = {
+      timestamp,
+      today: isToday(new Date(timestamp)),
+      selected: false,
+      disabled,
+      cssClass,
+      isLastMonth: date.getMonth() < month!,
+      isNextMonth: date.getMonth() > month!,
+      title,
+      marked
+    }
+
+    return response;
+
+    // let _isToday = ;
+
+
+    // let _rangeBeg = new Date(opt.from as Date).getTime();
+    // let _rangeEnd = new Date(opt.to as Date).getTime();
+
+    // let disableWee = opt.disableWeeks!.indexOf(date.getDay()) !== -1;
+
+    // if (_rangeBeg > 0 && _rangeEnd > 0) {
+    //   isBetween = isBefore(new Date(time), _rangeBeg) ? false : isBetween;
+    // if (!opt.canBackwardsSelected) {
+    //   isBetween = !this.isBetweenTime(date, _rangeBeg, _rangeEnd, '[]');
+    // } else {
+    // }
+    // } else if (_rangeBeg > 0 && _rangeEnd === 0) {
+    //   isBetween = false;
+    // if (!opt.canBackwardsSelected) {
+    //   let _addTime = addDays(new Date(time), 1);
+
+    //   isBetween = !isAfter(_addTime, _rangeBeg);
+    // } else {
+    // }
+    // }
+
+    // let _disable = false;
+
+
+
+
     // else if (opt.defaultTitle) {
     //   title = opt.defaultTitle;
     // }
-    let subTitle = '';
+    // let subTitle = '';
     // if (dayConfig && dayConfig.subTitle) {
     //   subTitle = dayConfig.subTitle;
     // }
@@ -285,20 +317,20 @@ export class CalendarComponent implements ControlValueAccessor, OnInit {
     //   subTitle = opt.defaultSubtitle;
     // }
 
-    return {
-      time,
-      isToday: _isToday,
-      title,
-      subTitle,
-      selected: false,
-      isLastMonth: date.getMonth() < month!,
-      isNextMonth: date.getMonth() > month!,
-      marked: dayConfig ? dayConfig.marked || false : false,
-      cssClass: dayConfig ? dayConfig.cssClass || '' : '',
-      disable: _disable,
-      isFirst: date.getDate() === 1,
-      isLast: date.getDate() === getDaysInMonth(new Date(time)),
-    };
+    // return {
+    //   timestamp,
+    //   isToday: _isToday,
+    //   title,
+    //   subTitle,
+    //   selected: false,
+    //   isLastMonth: date.getMonth() < month!,
+    //   isNextMonth: date.getMonth() > month!,
+    //   marked: dayConfig ? dayConfig.marked || false : false,
+    //   cssClass: dayConfig ? dayConfig.cssClass || '' : '',
+    //   disable: _disable,
+    //   isFirst: date.getDate() === 1,
+    //   isLast: date.getDate() === getDaysInMonth(new Date(time)),
+    // };
   }
 
   findDayConfig(day: Date, opt: ICalendarOptionsV2): IDayConfig | null | undefined {
@@ -309,10 +341,10 @@ export class CalendarComponent implements ControlValueAccessor, OnInit {
 
   monthOnSelect(month: number): void {
     const newMonth = this.monthIndexToDate(month).getTime();
-    this._view = 'days';
+    this.viewMode = 'days';
 
     this.onMonthChanged.emit({
-      oldMonth: format(new Date(this.monthOpt.original.time), 'yyyy-MM-dd'),
+      oldMonth: format(new Date(this.monthOpt.original.timestamp), 'yyyy-MM-dd'),
       newMonth: format(new Date(newMonth), 'yyyy-MM-dd')
     });
 

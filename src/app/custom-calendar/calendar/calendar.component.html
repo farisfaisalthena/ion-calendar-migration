@@ -1,3 +1,11 @@
-<calendar-week></calendar-week>
+<ng-container [ngSwitch]="viewMode">
+  <ng-container *ngSwitchCase="'days'">
+    <calendar-week></calendar-week>
 
-<month-picker [month]="monthOpt" (onSelect)="monthOnSelect($event)"></month-picker>
+    <calendar-days [selectedMonth]="monthOpt"></calendar-days>
+  </ng-container>
+
+  <ng-container *ngSwitchCase="'month'">
+    <month-picker [month]="monthOpt" (onSelect)="monthOnSelect($event)"></month-picker>
+  </ng-container>
+</ng-container>

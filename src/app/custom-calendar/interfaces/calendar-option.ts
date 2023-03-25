@@ -1,6 +1,6 @@
-export type DefaultDate = Date | string | number | null;
+import { PickerMode } from '../types';
 
-type PickerMode = 'single' | 'multi' | 'range';
+export type DefaultDate = Date | string | number | null;
 
 export interface ICalendarOptionsV2 {
   /** Start Date */
