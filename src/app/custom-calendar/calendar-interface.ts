@@ -1,4 +1,4 @@
-import { PickerMode } from './types';
+import { PickerMode } from '../calendar-types';
 
 export interface ICalendarMonthChangeEv {
   oldMonth: string;
