@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { ControlValueAccessor } from '@angular/forms';
 
-import { addDays, addMonths, addYears, format, getDaysInMonth, isBefore, isSameDay, isToday, subDays, subMonths, subYears } from 'date-fns';
+import { addDays, addMonths, addYears, format, getDaysInMonth, isAfter, isBefore, isEqual, isSameDay, isToday, subDays, subMonths, subYears } from 'date-fns';
 
 import { ICalendarDay, ICalendarMonth, ICalendarMonthChangeEv, ICalendarOptions, ICalendarOriginal, IDayConfig } from '../calendar-interface';
 import { defaultMonthFormat } from '../default-calendar-settings';
@@ -214,9 +214,11 @@ export class CalendarComponent implements ControlValueAccessor, OnInit {
     }
 
     if (rangeStart > 0 && rangeEnd > 0) {
-      isBetween = isBefore(new Date(timestamp), rangeStart) ? false : isBetween;
+      isBetween = !this.isBetweenTime(date, rangeStart, rangeEnd, '[]');
     } else if (rangeStart > 0 && rangeEnd === 0) {
-      isBetween = false;
+      let _addTime = addDays(new Date(timestamp), 1);
+
+      isBetween = !isAfter(_addTime, rangeStart);
     }
 
     const disabled = dayConfig ? dayConfig.disable || false : (disableWeek || isBetween);
@@ -344,6 +346,18 @@ export class CalendarComponent implements ControlValueAccessor, OnInit {
 
     this.monthOpt = this.createMonth(nextYear);
   }
+
+  isBetweenTime(date: Date, from: number, to: number, inclusivity = '()'): boolean {
+    if (!['()', '[]', '(]', '[)'].includes(inclusivity)) {
+      throw new Error('Inclusivity parameter must be one of (), [], (], [)');
+    }
+
+    const isBeforeEqual = inclusivity[0] === '[',
+      isAfterEqual = inclusivity[1] === ']';
+
+    return (isBeforeEqual ? (isEqual(from, date) || isBefore(from, date)) : isBefore(from, date)) &&
+      (isAfterEqual ? (isEqual(to, date) || isAfter(to, date)) : isAfter(to, date));
+  };
 
   get canGoBack(): boolean {
     if (!this.calendarOpts.from || this.viewMode !== 'days') return true;

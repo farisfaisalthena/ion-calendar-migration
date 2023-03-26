@@ -21,10 +21,7 @@ export class HomePage {
   };
 
   opt: ICalendarOptions = {
-    daysConfig: this.datesConfig,
-    pickerMode: 'single',
-    // to: null,
-    // disableWeeks: [5]
+    daysConfig: this.datesConfig
   }
 
   attendanceResponse = [
