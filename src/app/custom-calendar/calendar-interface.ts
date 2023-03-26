@@ -49,7 +49,6 @@ export interface ICalendarOptions {
   /** Determine if other months overlaps with current month. Default to true */
   overlapMonths?: boolean;
   showToggleButtons?: boolean;
-  showMonthPicker?: boolean;
 }
 
 export interface IDayConfig {

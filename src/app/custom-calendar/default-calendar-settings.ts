@@ -12,4 +12,4 @@ export const defaultMonths = (format: MonthFormat): string[] => {
     .map(key => new Date(0, key).toLocaleDateString('en', { month: format }).toUpperCase());
 }
 
-export const defaultMonthFormat = 'MMM YYYY';
+export const defaultMonthFormat = 'MMMM yyyy';

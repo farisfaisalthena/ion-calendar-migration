@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { ControlValueAccessor } from '@angular/forms';
 
-import { addDays, addMonths, format, getDaysInMonth, isBefore, isSameDay, isToday, subDays } from 'date-fns';
+import { addDays, addMonths, addYears, format, getDaysInMonth, isBefore, isSameDay, isToday, subDays, subMonths, subYears } from 'date-fns';
 
 import { CalendarComponentPayloadTypes, CalendarComponentTypeProperty } from 'src/app/components/calendar/calendar.component';
 import { ICalendarDay, ICalendarMonth, ICalendarMonthChangeEv, ICalendarOptions, ICalendarOriginal, IDayConfig } from '../calendar-interface';
@@ -19,6 +19,7 @@ export class CalendarComponent implements ControlValueAccessor, OnInit {
   calendarOpts!: ICalendarOptions;
   viewMode: 'days' | 'month' = 'days';
   calendarMonthValue: Array<ICalendarDay | null> = [null, null];
+  arrowIcon: 'caret-down-outline' | 'caret-up-outline' = 'caret-down-outline';
 
 
 
@@ -52,15 +53,6 @@ export class CalendarComponent implements ControlValueAccessor, OnInit {
     this._showToggleButtons = value;
   }
 
-  set showMonthPicker(value: boolean) {
-    this._showMonthPicker = value;
-  }
-
-  _showMonthPicker = true;
-  get showMonthPicker(): boolean {
-    return this._showMonthPicker;
-  }
-
   constructor() { }
 
   ngOnInit() {
@@ -72,13 +64,6 @@ export class CalendarComponent implements ControlValueAccessor, OnInit {
   initOpts(): void {
     if (this.calendarOpts && typeof this.calendarOpts.showToggleButtons === 'boolean') {
       this.showToggleButtons = this.calendarOpts.showToggleButtons;
-    }
-    if (this.calendarOpts && typeof this.calendarOpts.showMonthPicker === 'boolean') {
-      this.showMonthPicker = this.calendarOpts.showMonthPicker;
-
-      if (this.viewMode !== 'days' && !this.showMonthPicker) {
-        this.viewMode = 'days';
-      }
     }
 
     this.calendarOpts = this.defaultOpt(this.calendarOpts);
@@ -322,8 +307,7 @@ export class CalendarComponent implements ControlValueAccessor, OnInit {
       monthFormat = defaultMonthFormat,
       daysConfig = _daysConfig,
       overlapMonths = true,
-      showToggleButtons = true,
-      showMonthPicker = true
+      showToggleButtons = true
     } = { ...calendarOptions };
 
     const defaultOpt: ICalendarOptions = {
@@ -335,10 +319,73 @@ export class CalendarComponent implements ControlValueAccessor, OnInit {
       monthFormat,
       daysConfig,
       overlapMonths,
-      showToggleButtons,
-      showMonthPicker
+      showToggleButtons
     }
 
     return defaultOpt;
+  }
+
+  switchMode(): void {
+    this.viewMode = this.viewMode === 'days' ? 'month' : 'days';
+    this.arrowIcon = this.viewMode === 'days' ? 'caret-down-outline' : 'caret-up-outline';
+  }
+
+  /** Format Timestamp */
+  monthFormat(timestamp: number) {
+    return format(new Date(timestamp), this.calendarOpts.monthFormat || defaultMonthFormat);
+  }
+
+  prev(): void {
+    if (this.viewMode === 'days') {
+      const backTime = subMonths(new Date(this.monthOpt.original.timestamp), 1).getTime();
+
+      this.onMonthChanged.emit({
+        oldMonth: format(new Date(this.monthOpt.original.timestamp), 'yyyy-MM-dd'),
+        newMonth: format(new Date(backTime), 'yyyy-MM-dd')
+      });
+
+      this.monthOpt = this.createMonth(backTime);
+
+      return;
+    }
+
+    const originalTime = new Date(this.monthOpt.original.timestamp);
+
+    if (originalTime.getFullYear() === 1970) return;
+
+    const backTime = subYears(new Date(this.monthOpt.original.timestamp), 1).getTime();
+
+    this.monthOpt = this.createMonth(backTime);
+  }
+
+  next(): void {
+    if (this.viewMode === 'days') {
+      const nextTime = addMonths(new Date(this.monthOpt.original.timestamp), 1).getTime();
+
+      this.onMonthChanged.emit({
+        oldMonth: format(new Date(this.monthOpt.original.timestamp), 'yyyy-MM-dd'),
+        newMonth: format(new Date(nextTime), 'yyyy-MM-dd')
+      });
+
+      this.monthOpt = this.createMonth(nextTime);
+
+      return;
+    }
+
+    const nextYear = addYears(new Date(this.monthOpt.original.timestamp), 1).getTime();
+
+    this.monthOpt = this.createMonth(nextYear);
+  }
+
+  get canGoBack(): boolean {
+    if (!this.calendarOpts.from || this.viewMode !== 'days') return true;
+
+    return this.monthOpt.original.timestamp > new Date(this.calendarOpts.from).getTime();
+  }
+
+  get canGoNext(): boolean {
+    if (!this.calendarOpts.to || this.viewMode !== 'days') return true;
+
+    return this.monthOpt.original.timestamp < new Date(this.calendarOpts.to).getTime();
   }
 }

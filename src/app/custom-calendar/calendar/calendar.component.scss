@@ -1,0 +1,63 @@
+
+:host {
+  $btn-width: 40px;
+
+  padding: 10px 20px;
+  box-sizing: border-box;
+  display: inline-block;
+  background: var(--secondary-bg-color);
+  width: 100%;
+
+  .calendar-container {
+    padding: 0 $btn-width 0 $btn-width;
+    overflow: hidden;
+
+    .back-btn,
+    .next-btn,
+    .switch-btn {
+      display: block;
+      position: relative;
+      float: left;
+      min-height: 32px;
+      margin: 0;
+      padding: 0;
+      --padding-start: 0;
+      --padding-end: 0;
+      font-size: 15px;
+    }
+
+    .back-btn,
+    .next-btn {
+      color: var(--ion-color-medium);
+      --border-radius: 50%;
+    }
+
+    .back-btn {
+      margin-left: -100%;
+      left: -$btn-width;
+      width: $btn-width;
+    }
+
+    .next-btn {
+      margin-left: -$btn-width;
+      right: -$btn-width;
+      width: $btn-width;
+    }
+
+    .switch-btn {
+      --margin-top: 0;
+      --margin-bottom: 0;
+      --margin-start: auto;
+      --margin-end: auto;
+
+      width: 100%;
+      text-align: center;
+      line-height: 32px;
+      color: var(--ion-color-medium);
+
+      .arrow-dropdown {
+        margin-left: 5px;
+      }
+    }
+  }
+}
