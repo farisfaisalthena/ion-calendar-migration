@@ -21,17 +21,7 @@ export class CalendarComponent implements ControlValueAccessor, OnInit {
   calendarMonthValue: Array<ICalendarDay | null> = [null, null];
   arrowIcon: 'caret-down-outline' | 'caret-up-outline' = 'caret-down-outline';
 
-
-
-  // _d!: ICalendarModalOptions;
-  // _options!: CalendarComponentOptions;
-  // private readonly defaultOpts!: CalendarModalOptions;
-
-
-
   type: CalendarComponentTypeProperty = 'string';
-  _showToggleButtons = true;
-  // _view: 'month' | 'days' = 'days';
 
 
   // Option required
@@ -49,10 +39,6 @@ export class CalendarComponent implements ControlValueAccessor, OnInit {
   _onTouched: Function = () => { };
   _onChanged: Function = () => { };
 
-  set showToggleButtons(value: boolean) {
-    this._showToggleButtons = value;
-  }
-
   constructor() { }
 
   ngOnInit() {
@@ -62,10 +48,6 @@ export class CalendarComponent implements ControlValueAccessor, OnInit {
   }
 
   initOpts(): void {
-    if (this.calendarOpts && typeof this.calendarOpts.showToggleButtons === 'boolean') {
-      this.showToggleButtons = this.calendarOpts.showToggleButtons;
-    }
-
     this.calendarOpts = this.defaultOpt(this.calendarOpts);
   }
 

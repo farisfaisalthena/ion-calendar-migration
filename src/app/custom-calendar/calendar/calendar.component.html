@@ -1,19 +1,20 @@
 <div class="calendar-container">
-  <ion-button type="button" fill="clear" class="switch-btn"
-    [attr.aria-label]="monthFormat(monthOpt.original.timestamp)" (click)="switchMode()">
+  <ion-button type="button" fill="clear" class="switch-btn" [attr.aria-label]="monthFormat(monthOpt.original.timestamp)"
+    (click)="switchMode()">
     {{ monthFormat(monthOpt.original.timestamp) }}
 
     <ion-icon class="arrow-dropdown" [name]="arrowIcon"></ion-icon>
   </ion-button>
 
-  <ng-template [ngIf]="_showToggleButtons">
+  <ng-container *ngIf="calendarOpts.showToggleButtons">
     <ion-button type="button" fill="clear" class="back-btn" [disabled]="!canGoBack" (click)="prev()">
       <ion-icon slot="icon-only" size="small" [name]="'chevron-back-outline'"></ion-icon>
     </ion-button>
+
     <ion-button type="button" fill="clear" class="next-btn" [disabled]="!canGoNext" (click)="next()">
       <ion-icon slot="icon-only" size="small" [name]="'chevron-forward-outline'"></ion-icon>
     </ion-button>
-  </ng-template>
+  </ng-container>
 </div>
 
 <ng-container [ngSwitch]="viewMode">
