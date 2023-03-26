@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { ControlValueAccessor } from '@angular/forms';
 
-import { addDays, addMonths, format, getDaysInMonth, isSameDay, isToday, subDays } from 'date-fns';
+import { addDays, addMonths, format, getDaysInMonth, isBefore, isSameDay, isToday, subDays } from 'date-fns';
 
 import { CalendarComponentPayloadTypes, CalendarComponentTypeProperty } from 'src/app/components/calendar/calendar.component';
 import { ICalendarDay, ICalendarMonth, ICalendarMonthChangeEv, ICalendarOptions, ICalendarOriginal, IDayConfig } from '../calendar-interface';
@@ -247,21 +247,26 @@ export class CalendarComponent implements ControlValueAccessor, OnInit {
   createCalendarDay(timestamp: number, opt: ICalendarOptions, month?: number): ICalendarDay {
     const date = new Date(timestamp);
     const dayConfig = this.findDayConfig(date, opt);
+    const rangeStart = new Date(opt.from as Date).getTime();
+    const rangeEnd = new Date(opt.to as Date).getTime();
+    let isBetween = true;
+
     const marked = dayConfig ? dayConfig.marked || false : false
     const cssClass = dayConfig ? dayConfig.cssClass || '' : '';
+    const disableWeek = opt.disableWeeks!.indexOf(date.getDay()) !== -1;
 
     let title = new Date(timestamp).getDate().toString();
     if (dayConfig && dayConfig.title) {
       title = dayConfig.title;
     }
-    let disabled = false;
-    let isBetween = true;
-    let disableWeek = opt.disableWeeks!.indexOf(date.getDay()) !== -1;
-    if (dayConfig && !!dayConfig.disable) {
-      disabled = dayConfig.disable;
-    } else {
-      disabled = disableWeek || isBetween;
+
+    if (rangeStart > 0 && rangeEnd > 0) {
+      isBetween = isBefore(new Date(timestamp), rangeStart) ? false : isBetween;
+    } else if (rangeStart > 0 && rangeEnd === 0) {
+      isBetween = false;
     }
+
+    const disabled = dayConfig ? dayConfig.disable || false : (disableWeek || isBetween);
 
     const response: ICalendarDay = {
       timestamp,
@@ -276,67 +281,12 @@ export class CalendarComponent implements ControlValueAccessor, OnInit {
     }
 
     return response;
-
-    // let _isToday = ;
-
-
-    // let _rangeBeg = new Date(opt.from as Date).getTime();
-    // let _rangeEnd = new Date(opt.to as Date).getTime();
-
-    // let disableWee = opt.disableWeeks!.indexOf(date.getDay()) !== -1;
-
-    // if (_rangeBeg > 0 && _rangeEnd > 0) {
-    //   isBetween = isBefore(new Date(time), _rangeBeg) ? false : isBetween;
-    // if (!opt.canBackwardsSelected) {
-    //   isBetween = !this.isBetweenTime(date, _rangeBeg, _rangeEnd, '[]');
-    // } else {
-    // }
-    // } else if (_rangeBeg > 0 && _rangeEnd === 0) {
-    //   isBetween = false;
-    // if (!opt.canBackwardsSelected) {
-    //   let _addTime = addDays(new Date(time), 1);
-
-    //   isBetween = !isAfter(_addTime, _rangeBeg);
-    // } else {
-    // }
-    // }
-
-    // let _disable = false;
-
-
-
-
-    // else if (opt.defaultTitle) {
-    //   title = opt.defaultTitle;
-    // }
-    // let subTitle = '';
-    // if (dayConfig && dayConfig.subTitle) {
-    //   subTitle = dayConfig.subTitle;
-    // }
-    // else if (opt.defaultSubtitle) {
-    //   subTitle = opt.defaultSubtitle;
-    // }
-
-    // return {
-    //   timestamp,
-    //   isToday: _isToday,
-    //   title,
-    //   subTitle,
-    //   selected: false,
-    //   isLastMonth: date.getMonth() < month!,
-    //   isNextMonth: date.getMonth() > month!,
-    //   marked: dayConfig ? dayConfig.marked || false : false,
-    //   cssClass: dayConfig ? dayConfig.cssClass || '' : '',
-    //   disable: _disable,
-    //   isFirst: date.getDate() === 1,
-    //   isLast: date.getDate() === getDaysInMonth(new Date(time)),
-    // };
   }
 
-  findDayConfig(day: Date, opt: ICalendarOptions): IDayConfig | null | undefined {
+  findDayConfig(day: Date, opt: ICalendarOptions): IDayConfig | null {
     if (opt.daysConfig && opt.daysConfig.length < 1) return null;
 
-    return opt.daysConfig.find(n => isSameDay(day, new Date(n.date)));
+    return opt.daysConfig.find(n => isSameDay(day, new Date(n.date)))!;
   }
 
   monthOnSelect(month: number): void {
