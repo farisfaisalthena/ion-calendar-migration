@@ -3,7 +3,6 @@ import { ControlValueAccessor } from '@angular/forms';
 
 import { addDays, addMonths, addYears, format, getDaysInMonth, isBefore, isSameDay, isToday, subDays, subMonths, subYears } from 'date-fns';
 
-import { CalendarComponentPayloadTypes, CalendarComponentTypeProperty } from 'src/app/components/calendar/calendar.component';
 import { ICalendarDay, ICalendarMonth, ICalendarMonthChangeEv, ICalendarOptions, ICalendarOriginal, IDayConfig } from '../calendar-interface';
 import { defaultMonthFormat } from '../default-calendar-settings';
 
@@ -20,10 +19,6 @@ export class CalendarComponent implements ControlValueAccessor, OnInit {
   viewMode: 'days' | 'month' = 'days';
   calendarMonthValue: Array<ICalendarDay | null> = [null, null];
   arrowIcon: 'caret-down-outline' | 'caret-up-outline' = 'caret-down-outline';
-
-  type: CalendarComponentTypeProperty = 'string';
-
-
   // Option required
   @Input()
   set options(value: ICalendarOptions) {
@@ -106,21 +101,12 @@ export class CalendarComponent implements ControlValueAccessor, OnInit {
     }
   }
 
-  _createCalendarDay(value: CalendarComponentPayloadTypes): ICalendarDay {
+  _createCalendarDay(value: number): ICalendarDay {
     return this.createCalendarDay(this._payloadToTimeNumber(value), this.calendarOpts);
   }
 
-  _payloadToTimeNumber(value: CalendarComponentPayloadTypes): number {
-    let date;
-    if (this.type === 'string') {
-      date = format(new Date(value as number), 'yyyy-MM-dd');
-      // date = moment(value, this.format);
-    } else {
-      date = new Date(value as number).getTime();
-      // date = moment(value);
-    }
-    // return date.valueOf();
-    return date as number;
+  _payloadToTimeNumber(value: number): number {
+    return new Date(value).getTime();
   }
 
   createMonth(date: number): ICalendarMonth {
