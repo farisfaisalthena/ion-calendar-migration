@@ -36,18 +36,19 @@ export interface ICalendarOptions {
   from?: Date | number;
   /** End Date */
   to?: Date | number;
-  /** Calendar mode. Default to single */
+  /** Calendar mode. Default to `single` */
   pickerMode?: PickerMode;
   /** Set week start date */
   weekStart?: number;
-  /** Weeks to be disabled (0-6) */
+  /** Weeks to be disabled `(0-6)` */
   disableWeeks?: number[];
-  /** Month Format. Default to MMM YYYY */
+  /** Month Format. Default to `MMM YYYY` */
   monthFormat?: string;
-  /** Days configuration array */
+  /** Days configuration array. Default is `[]` */
   daysConfig: IDayConfig[];
-  /** Determine if other months overlaps with current month. Default to true */
+  /** Determine if other months overlaps with current month. Default to `true` */
   overlapMonths?: boolean;
+  /** If `false`, month change buttons is removed. Default to `true` */
   showToggleButtons?: boolean;
 }
 
