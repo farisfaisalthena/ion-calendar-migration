@@ -1,9 +1,9 @@
 <div class="calendar-container">
   <ion-button type="button" fill="clear" class="switch-btn" [attr.aria-label]="monthFormat(monthOpt.original.timestamp)"
-    (click)="switchMode()">
+    [disabled]="!calendarOpts.showToggleButtons" (click)="switchMode()">
     {{ monthFormat(monthOpt.original.timestamp) }}
 
-    <ion-icon class="arrow-dropdown" [name]="arrowIcon"></ion-icon>
+    <ion-icon *ngIf="calendarOpts.showToggleButtons" class="arrow-dropdown" [name]="arrowIcon"></ion-icon>
   </ion-button>
 
   <ng-container *ngIf="calendarOpts.showToggleButtons">
