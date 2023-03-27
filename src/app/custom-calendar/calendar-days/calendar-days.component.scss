@@ -20,324 +20,170 @@ $text-color: var(--ion-text-color);
     opacity: $disabled-opacity;
   }
 
-  .days-btn {
-    cursor: pointer;
-    border-radius: 36px;
-    width: 36px;
-    display: block;
-    margin: 0 auto;
-    padding: 0;
-    height: 36px;
-    background: transparent;
+  &.start-selection .days-btn,
+  &.end-selection .days-btn {
+    background-color: var(--ion-color-primary);
+    color: $text-color;
+  }
+
+  &.start-selection {
     position: relative;
-    z-index: 2;
-    outline: 0;
+
+    &:before,
+    &:after {
+      height: 36px;
+      width: 50%;
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      display: block;
+    }
+
+    &:before {
+      background-color: var(--ion-color-primary);
+    }
+
+    &:after {
+      background-color: $text-color;
+      opacity: 0.25;
+    }
+  }
+
+  &.end-selection {
+    position: relative;
+
+    &:before,
+    &:after {
+      height: 36px;
+      width: 50%;
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      display: block;
+    }
+
+    &:before {
+      background-color: var(--ion-color-primary);
+    }
+
+    &:after {
+      background-color: $text-color;
+      opacity: 0.25;
+    }
+  }
+
+  .start-selection.end-selection {
+    &:after {
+      background-color: transparent;
+    }
+  }
+
+  &.start-selection .days-btn {
+    border-radius: 50%;
+  }
+
+  &.between .days-btn {
+    background-color: var(--ion-color-primary);
+    width: 100%;
+    border-radius: 0;
+    position: relative;
+
+    &:after {
+      height: 36px;
+      width: 100%;
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      display: block;
+      background-color: $text-color;
+      opacity: 0.25;
+    }
 
     p {
-      margin: 0;
-      font-size: 1.2em;
-      text-align: center;
       color: $text-color;
     }
+  }
 
-    &[disabled] p {
-      color: $disabled-color;
-      cursor: default;
+  &.end-selection .days-btn {
+    p {
+      color: $text-color;
     }
+  }
 
-    &.today p {
-      font-weight: bold;
+  &.start-selection,
+  &.end-selection,
+  &.between {
+    .days-btn {
+      transition: background-color 180ms ease-in-out;
     }
+  }
 
-    &.marked p {
-      color: var(--ion-color-primary);
-      font-weight: 500;
-    }
+  &.start-selection.end-selection::before {
+    --ion-color-primary: transparent;
+  }
 
+  &.start-selection:nth-child(7n):before,
+  &.between:nth-child(7n) .days-btn {
     &.on-selected {
-      background: var(--ion-color-primary);
-      color: $text-color;
-      border: none;
-
-      p {
-        font-size: 1.3em;
-      }
+      border-radius: 50%;
     }
+  }
+
+  &.start-selection .days-btn.is-first,
+  &.end-selection .days-btn.is-first,
+  .days-btn.is-first.on-selected,
+  .days-btn.is-last.on-selected,
+  .start-selection .days-btn.is-last,
+  .end-selection .days-btn.is-last {
+    border-radius: 50%;
   }
 }
 
+.days-btn {
+  cursor: pointer;
+  border-radius: 36px;
+  width: 36px;
+  display: block;
+  margin: 0 auto;
+  padding: 0;
+  height: 36px;
+  background: transparent;
+  position: relative;
+  z-index: 2;
+  outline: 0;
 
+  p {
+    margin: 0;
+    font-size: 1.2em;
+    text-align: center;
+    color: $text-color;
+  }
 
+  &[disabled] p {
+    color: $disabled-color;
+    cursor: default;
+  }
 
-// TODO: Remove
-// button.days .marked p,
-// .days .today p {
-//   color: var(--ion-color-primary);
-// }
+  &.today p {
+    font-weight: bold;
+  }
 
-// .days .today p {
-//   font-weight: 700;
-// }
+  &.marked p {
+    color: var(--ion-color-primary);
+    font-weight: 500;
+  }
 
-// .days .last-month-day p,
-// .days .next-month-day p {
-// color: $disabled-color;
-// opacity: $disabled-opacity;
-// }
+  &.on-selected {
+    background: var(--ion-color-primary);
+    color: $text-color;
+    border: none;
 
-// .days .today.on-selected p,
-// .days .marked.on-selected p {
-//   color: $text-color;
-// }
-
-
-// TODO: Bottom
-// .days .on-selected,
-// .startSelection button.days-btn,
-// .endSelection button.days-btn {
-// background-color: var(--ion-color-primary);
-// color: $text-color;
-// }
-// TODO: Above
-
-// TODO: Add
-// .startSelection {
-//   position: relative;
-
-//   &:before,
-//   &:after {
-//     height: 36px;
-//     width: 50%;
-//     content: '';
-//     position: absolute;
-//     top: 0;
-//     right: 0;
-//     display: block;
-//   }
-
-//   &:before {
-//     background-color: var(--ion-color-primary);
-//   }
-
-//   &:after {
-//     background-color: $text-color;
-//     opacity: 0.25;
-//   }
-// }
-
-// .endSelection {
-//   position: relative;
-
-//   &:before,
-//   &:after {
-//     height: 36px;
-//     width: 50%;
-//     content: '';
-//     position: absolute;
-//     top: 0;
-//     left: 0;
-//     display: block;
-//   }
-
-//   &:before {
-//     background-color: var(--ion-color-primary);
-//   }
-
-//   &:after {
-//     background-color: $text-color;
-//     opacity: 0.25;
-//   }
-// }
-
-// .startSelection.endSelection {
-//   &:after {
-//     background-color: transparent;
-//   }
-// }
-
-// .startSelection button.days-btn {
-//   border-radius: 50%;
-// }
-
-// .between button.days-btn {
-//   background-color: var(--ion-color-primary);
-//   width: 100%;
-//   border-radius: 0;
-//   position: relative;
-
-//   &:after {
-//     height: 36px;
-//     width: 100%;
-//     content: '';
-//     position: absolute;
-//     top: 0;
-//     left: 0;
-//     right: 0;
-//     display: block;
-//     background-color: $text-color;
-//     opacity: 0.25;
-//   }
-
-//   p {
-//     color: $text-color;
-//   }
-// }
-
-// .endSelection button.days-btn {
-//   border-radius: 50%;
-
-//   p {
-//     color: $text-color;
-//   }
-// }
-
-
-// TODO: Remove
-// .days .on-selected p {
-//   color: $text-color;
-// }
-
-// TODO: Add
-// .startSelection,
-// .endSelection,
-// .between {
-//   button.days-btn {
-//     transition: background-color 180ms ease-in-out;
-//   }
-// }
-
-// .startSelection.endSelection::before {
-//   --ion-color-primary: transparent;
-// }
-
-// :host {
-
-
-// .days-box {
-//   padding: 0.5rem;
-// }
-
-// TODO: Remove
-// .days:nth-of-type(7n),
-// .days:nth-of-type(7n + 1) {
-//   width: 15%;
-// }
-// TODO: Remove
-// .days {
-//   width: 14%;
-//   float: left;
-//   text-align: center;
-//   height: 36px;
-//   margin-bottom: 5px;
-// }
-
-// TODO: Remove
-// .days .marked p {
-//   font-weight: 500;
-// }
-// TODO: Remove
-// .days .on-selected {
-//   border: none;
-
-//   p {
-//     font-size: 1.3em;
-//   }
-// }
-
-// TODO: Remove
-// button.days-btn {
-//   border-radius: 36px;
-//   width: 36px;
-//   display: block;
-//   margin: 0 auto;
-//   padding: 0;
-//   height: 36px;
-//   background-color: transparent;
-//   position: relative;
-//   z-index: 2;
-//   outline: 0;
-// }
-// TODO: Remove
-// button.days-btn p {
-//   margin: 0;
-//   font-size: 1.2em;
-//   color: var(--ion-text-color);
-//   text-align: center;
-// }
-// TODO: Remove
-// button.days-btn[disabled] p {
-//   color: $disabled-color;
-//   opacity: $disabled-opacity;
-// }
-
-
-// TODO: Add
-// .days.startSelection:nth-child(7n):before,
-// .days.between:nth-child(7n) button.days-btn,
-// .days.between button.days-btn.is-last {
-//   border-radius: 0 36px 36px 0;
-
-//   &.on-selected {
-//     border-radius: 50%;
-//   }
-// }
-
-// .days.endSelection:nth-child(7n + 1):before,
-// .days.between:nth-child(7n + 1) button.days-btn,
-// .days.between.is-first-wrap button.days-btn.is-first,
-// button.days-btn.is-first {
-//   border-radius: 36px 0 0 36px;
-// }
-
-// .startSelection button.days-btn.is-first,
-// .endSelection button.days-btn.is-first,
-// button.days-btn.is-first.on-selected,
-// button.days-btn.is-last.on-selected,
-// .startSelection button.days-btn.is-last,
-// .endSelection button.days-btn.is-last {
-//   border-radius: 50%;
-// }
-
-// .startSelection.is-last-wrap {
-
-//   &::before,
-//   &::after {
-//     border-radius: 0 36px 36px 0;
-//   }
-// }
-
-// .endSelection.is-first-wrap {
-
-//   &::before,
-//   &::after {
-//     border-radius: 36px 0 0 36px;
-//   }
-// }
-
-// &.component-mode {
-
-//   .days.between {
-
-//     button.days-btn.is-last,
-//     button.days-btn.is-first {
-//       border-radius: 0;
-//     }
-//   }
-
-//   .days.startSelection.is-last-wrap {
-
-//     &::before,
-//     &::after {
-//       border-radius: 0;
-//     }
-//   }
-
-//   .days.endSelection.is-first-wrap {
-
-//     &::before,
-//     &::after {
-//       border-radius: 0;
-//     }
-//   }
-// }
-// }
+    p {
+      font-size: 1.3em;
+    }
+  }
+}

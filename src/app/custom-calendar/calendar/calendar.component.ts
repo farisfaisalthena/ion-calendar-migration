@@ -30,6 +30,10 @@ export class CalendarComponent implements ControlValueAccessor, OnInit {
   }
   // Output events
   @Output() onMonthChanged: EventEmitter<ICalendarMonthChangeEv> = new EventEmitter();
+  @Output() onDateChanged: EventEmitter<string | object> = new EventEmitter();
+  @Output() onDaySelect: EventEmitter<ICalendarDay> = new EventEmitter();
+  @Output() onSelectStart: EventEmitter<ICalendarDay> = new EventEmitter();
+  @Output() onSelectEnd: EventEmitter<ICalendarDay> = new EventEmitter();
   // Required functions and cannot be moved as its required for ControlValueAccessor
   _onTouched: Function = () => { };
   _onChanged: Function = () => { };
@@ -345,6 +349,48 @@ export class CalendarComponent implements ControlValueAccessor, OnInit {
     const nextYear = addYears(new Date(this.monthOpt.original.timestamp), 1).getTime();
 
     this.monthOpt = this.createMonth(nextYear);
+  }
+
+  onChanged($event: ICalendarDay[]): void {
+    switch (this.calendarOpts.pickerMode) {
+      case 'single':
+        const date = this.formatDate($event[0].timestamp);
+
+        this._onChanged(date);
+        this.onDateChanged.emit(date);
+        break;
+
+      case 'range':
+        if ($event[0] && $event[1]) {
+          const rangeDate = {
+            from: this.formatDate($event[0].timestamp),
+            to: this.formatDate($event[1].timestamp),
+          };
+
+          this._onChanged(rangeDate);
+          this.onDateChanged.emit(rangeDate);
+        }
+        break;
+
+      case 'multi':
+        const dates = [];
+
+        for (let i = 0; i < $event.length; i++) {
+          if ($event[i] && $event[i].timestamp) {
+            dates.push(this.formatDate($event[i].timestamp));
+          }
+        }
+
+        this._onChanged(dates);
+        this.onDateChanged.emit(dates);
+        break;
+
+      default:
+    }
+  }
+
+  formatDate(timestamp: number): string {
+    return format(new Date(timestamp), 'yyyy-MM-dd')
   }
 
   isBetweenTime(date: Date, from: number, to: number, inclusivity = '()'): boolean {

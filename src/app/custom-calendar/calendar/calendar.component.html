@@ -21,7 +21,9 @@
   <ng-container *ngSwitchCase="'days'">
     <calendar-week></calendar-week>
 
-    <calendar-days [selectedMonth]="monthOpt"></calendar-days>
+    <calendar-days [selectedMonth]="monthOpt" [pickerMode]="calendarOpts.pickerMode!" [(ngModel)]="calendarMonthValue"
+      (onChange)="onChanged($event)" (onDaySelect)="onDaySelect.emit($event)"
+      (onSelectStart)="onSelectStart.emit($event)" (onSelectEnd)="onSelectEnd.emit($event)"></calendar-days>
   </ng-container>
 
   <ng-container *ngSwitchCase="'month'">
