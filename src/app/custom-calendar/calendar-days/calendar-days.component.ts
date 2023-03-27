@@ -91,63 +91,65 @@ export class CalendarDaysComponent implements ControlValueAccessor, AfterViewIni
 
     this.onDaySelect.emit(item);
 
-    if (this.pickerMode === 'single') {
-      this.dateArr[0] = item;
-
-      this.onChange.emit(this.dateArr as any); // TODO: Fix type
-      return;
-    }
-
-    if (this.pickerMode === 'range') {
-      if (this.dateArr[0] === null) {
+    switch (this.pickerMode) {
+      case 'single':
         this.dateArr[0] = item;
 
-        this.onSelectStart.emit(item);
-      } else if (this.dateArr[1] === null) {
-        if (this.dateArr[0].timestamp < item.timestamp) {
-          this.dateArr[1] = item;
+        this.onChange.emit(this.dateArr as any); // TODO: Fix type
 
-          this.onSelectEnd.emit(item);
-        } else {
-          this.dateArr[1] = this.dateArr[0];
+        break;
 
-          this.onSelectEnd.emit(this.dateArr[0]);
-
+      case 'range':
+        if (this.dateArr[0] === null) {
           this.dateArr[0] = item;
 
           this.onSelectStart.emit(item);
+        } else if (this.dateArr[1] === null) {
+          if (this.dateArr[0].timestamp < item.timestamp) {
+            this.dateArr[1] = item;
+
+            this.onSelectEnd.emit(item);
+          } else {
+            this.dateArr[1] = this.dateArr[0];
+
+            this.onSelectEnd.emit(this.dateArr[0]);
+
+            this.dateArr[0] = item;
+
+            this.onSelectStart.emit(item);
+          }
+        } else if (this.dateArr[0].timestamp > item.timestamp) {
+          this.dateArr[0] = item;
+
+          this.onSelectStart.emit(item);
+
+        } else if (this.dateArr[1].timestamp < item.timestamp) {
+          this.dateArr[1] = item;
+
+          this.onSelectEnd.emit(item);
+          // this.selectEnd.emit(item);
+        } else {
+          this.dateArr[0] = item;
+          this.dateArr[1] = null;
+
+          this.onSelectStart.emit(item); // TODO: Fix type
         }
-      } else if (this.dateArr[0].timestamp > item.timestamp) {
-        this.dateArr[0] = item;
 
-        this.onSelectStart.emit(item);
+        this.onChange.emit(this.dateArr as any);
 
-      } else if (this.dateArr[1].timestamp < item.timestamp) {
-        this.dateArr[1] = item;
+        break;
 
-        this.onSelectEnd.emit(item);
-        // this.selectEnd.emit(item);
-      } else {
-        this.dateArr[0] = item;
-        this.dateArr[1] = null;
+      case 'multi':
+        const index = this.dateArr.findIndex(e => e !== null && e.timestamp === item.timestamp);
 
-        this.onSelectStart.emit(item); // TODO: Fix type
-      }
+        if (index === -1) {
+          this.dateArr.push(item);
+        } else {
+          this.dateArr.splice(index, 1);
+        }
+        this.onChange.emit(this.dateArr.filter(e => e !== null) as any);
 
-      this.onChange.emit(this.dateArr as any);
-      return;
-    }
-
-    if (this.pickerMode === 'multi') {
-      const index = this.dateArr.findIndex(e => e !== null && e.timestamp === item.timestamp);
-
-      if (index === -1) {
-        this.dateArr.push(item);
-      } else {
-        this.dateArr.splice(index, 1);
-      }
-
-      this.onChange.emit(this.dateArr.filter(e => e !== null) as any);
+        break;
     }
   }
 
