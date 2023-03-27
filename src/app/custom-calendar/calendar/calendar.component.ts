@@ -250,7 +250,7 @@ export class CalendarComponent implements ControlValueAccessor, OnInit {
 
   monthOnSelect(month: number): void {
     const newMonth = this.monthIndexToDate(month).getTime();
-    this.viewMode = 'days';
+    this.switchMode();
 
     this.onMonthChanged.emit({
       oldMonth: format(new Date(this.monthOpt.original.timestamp), 'yyyy-MM-dd'),
