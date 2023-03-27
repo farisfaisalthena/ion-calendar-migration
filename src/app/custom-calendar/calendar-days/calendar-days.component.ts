@@ -27,7 +27,9 @@ export class CalendarDaysComponent implements ControlValueAccessor, AfterViewIni
   @Output() onSelectStart: EventEmitter<ICalendarDay> = new EventEmitter();
   @Output() onSelectEnd: EventEmitter<ICalendarDay> = new EventEmitter();
   // Other variables
-  rangeMode: boolean = this.pickerMode === 'range';
+  get rangeMode(): boolean {
+    return this.pickerMode === 'range';
+  }
   initialised: boolean = false;
   trackByTime: TrackByFunction<any> = (index: number, item: ICalendarOriginal) => item ? item.timestamp : index;
   dateArr: Array<ICalendarDay | null> = [null, null]; // Interface type has to be defined this way instead of ICalendarDay[] | null
